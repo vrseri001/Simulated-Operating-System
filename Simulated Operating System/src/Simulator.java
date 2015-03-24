@@ -12,6 +12,9 @@ public class Simulator {
     //list of all the programs from the configuration file
     private static LinkedList<Program> programs = new LinkedList<Program>();
 
+    //event queue
+    private LinkedList<Event>;
+
     //parameters for the Round Robin simulation
     private static int sliceLength;
     private static int dispatchOverhead;
@@ -33,9 +36,8 @@ public class Simulator {
 
                 //case: line describes I/O device attached to the system
                 else if(line.startsWith("I/O")){
+                    //only store relevant information, not line marker
                     String temp = line.substring(4);
-                    print("I/O attachment case");
-                    print(temp);
 
                     //split string into integers and other chars
                     String[] info = temp.split(" ");
@@ -48,9 +50,8 @@ public class Simulator {
                 }
 
                 else if(line.startsWith("DEVICE")){
+                    //only store relevant information, not line marker
                     String temp = line.substring(7);
-                    print("DEVICE attachment case");
-                    print(temp);
 
                     //split string into integers and other chars
                     //split string into integers and other chars
@@ -65,15 +66,17 @@ public class Simulator {
 
                 //case: line describes program information
                 else if(line.startsWith("PROGRAM")){
+                    //only store relevant information, not line marker
                     String temp = line.substring(8);
-                    print("Program case");
-                    print(temp);
 
                     //split string into integers and other chars
+                    String[] info = temp.split(" ");
 
                     //create a new program
+                    Program newProgram = new Program(Integer.parseInt(info[0]), info[1]);
 
-                    //add device to programs LinkedList
+                    //add program to programs LinkedList
+                    programs.add(newProgram);
 
                 }
 
@@ -81,15 +84,25 @@ public class Simulator {
                 else {
                     print("Simulator: main(): try/ while/ if error");
                 }
-
             }
         } catch (Exception e){
             print("Simulator: main(): error: "+e);
         }
+
+        eventSimulationDriver();
     }
 
     private static void print(String string){
         System.out.println(string);
+    }
+
+    private static void eventSimulationDriver(){
+
+        //for each program identified in the configuration file,
+        // create a load program event and insert it into the event queue
+        for (int i = 0; i<programs.size(); i++){
+            LoadProgramEvent lpe = new LoadProgramEvent(sliceLength);
+        }
     }
 
     /**
