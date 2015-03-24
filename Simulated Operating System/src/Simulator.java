@@ -12,8 +12,17 @@ public class Simulator {
     //list of all the programs from the configuration file
     private static LinkedList<Program> programs = new LinkedList<Program>();
 
+    //list of the times at which a new process should begin executing
+    private static LinkedList<Long> systemTimes;
+
     //event queue
-    private LinkedList<Event>;
+    private static EventQueue eventQueue = new EventQueue();
+
+    //kernel
+    private static SimulatedKernel kernel = new SimulatedKernel();
+
+    //system time
+    private static long systemTime = 0;
 
     //parameters for the Round Robin simulation
     private static int sliceLength;
@@ -101,8 +110,16 @@ public class Simulator {
         //for each program identified in the configuration file,
         // create a load program event and insert it into the event queue
         for (int i = 0; i<programs.size(); i++){
-            LoadProgramEvent lpe = new LoadProgramEvent(sliceLength);
+            LoadProgramEvent lpe = new LoadProgramEvent(systemTime, dispatchOverhead, programs.peek().getFileName());
+            eventQueue.add(lpe);
         }
+
+        //for each device in the config file, make a MAKE_DEVICE sys call to kernel
+        for(int i = 0; i<devices.size(); i++){
+            kernel.syscall(1, devices.peek());
+        }
+
+        mainEventLoop();
     }
 
     /**
@@ -111,5 +128,33 @@ public class Simulator {
      * @param dO dispatch overhead. time taken for the dispatcher to stop a process and start another
      */
     private static void schedule(int slice, int dO){
+    }
+
+    private static void mainEventLoop(){
+
+        boolean eventQueueEmpty = false;
+        boolean cpuIdle = false;
+
+        while (!eventQueueEmpty&&!cpuIdle){
+
+            //process the event up until TF
+            cpu.execute(eventQueue.peek());
+
+            //if the eventQueuse is empty
+            if (eventQueue.isEmpty()){
+                eventQueueEmpty = true;
+            }
+            else{
+                eventQueueEmpty = false;
+            }
+
+            //if the CPU is idle
+            if(/**/){
+                cpuIdle = true;
+            }
+            else{
+                cpuIdle = false;
+            }
+        }
     }
 }

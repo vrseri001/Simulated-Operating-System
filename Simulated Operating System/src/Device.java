@@ -1,25 +1,44 @@
 /**
  * Created by ErinV on 2015-03-23.
  */
-public class Device {
+public class Device implements IODevice {
+
     private int ID;
-    private String type;
+    private String name;
+    private long freeTime;
 
-    public Device(){
-        ID = 0;
-        type = "no type";
-    }
-
-    public Device(int ID, String type){
+    public Device(int ID, String name){
         this.ID = ID;
-        this.type = type;
+        this.name = name;
     }
 
+    /**
+     * Obtain the device ID.
+     */
     public int getID(){
         return ID;
     }
 
-    public String getType(){
-        return type;
+
+    /**
+     * Obtain the device type name.
+     */
+    public String getName(){
+        return name;
     }
+
+    /**
+     * Obtain the time at which the device will have completed all its current requests.
+     */
+    public long getFreeTime(){
+        return freeTime;
+    }
+
+    /**
+     * Place the given process on the device queue.
+     */
+    public long requestIO(int duration, ProcessControlBlock process){
+        return 1;
+    }
+
 }
