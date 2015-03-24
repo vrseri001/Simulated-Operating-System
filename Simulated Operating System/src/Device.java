@@ -14,4 +14,12 @@ public class Device {
         this.ID = ID;
         this.type = type;
     }
+
+    public int getID(){
+        return ID;
+    }
+
+    public String getType(){
+        return type;
+    }
 }

@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.*;
 
 /**
@@ -30,7 +28,6 @@ public class Simulator {
 
                 //case: line is a comment
                 if(line.startsWith("#")){
-                    print("Comment case executing");
                     //ignore this line
                 }
 
@@ -41,10 +38,13 @@ public class Simulator {
                     print(temp);
 
                     //split string into integers and other chars
+                    String[] info = temp.split(" ");
 
                     //create a new device
+                    Device newDevice = new Device(Integer.parseInt(info[0]), info[1]);
 
                     //add device to devices LinkedList
+                    devices.add(newDevice);
                 }
 
                 else if(line.startsWith("DEVICE")){
@@ -53,10 +53,14 @@ public class Simulator {
                     print(temp);
 
                     //split string into integers and other chars
+                    //split string into integers and other chars
+                    String[] info = temp.split(" ");
 
                     //create a new device
+                    Device newDevice = new Device(Integer.parseInt(info[0]), info[1]);
 
                     //add device to devices LinkedList
+                    devices.add(newDevice);
                 }
 
                 //case: line describes program information
@@ -88,7 +92,11 @@ public class Simulator {
         System.out.println(string);
     }
 
-    private static void schedule(int slice, int do){
-        
+    /**
+     * Round robin scheduling of processes on the CPU
+     * @param slice time slice assigned to each of the processes when running on the CPU
+     * @param dO dispatch overhead. time taken for the dispatcher to stop a process and start another
+     */
+    private static void schedule(int slice, int dO){
     }
 }
