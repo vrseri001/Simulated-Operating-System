@@ -93,7 +93,7 @@ public class Simulator {
 
                 //case: no other case condition met. provide feedback to that effect
                 else {
-                    print("Simulator: main(): try/ while/ if error");
+                    print("Invalid line found: "+line);
                 }
 
             }
