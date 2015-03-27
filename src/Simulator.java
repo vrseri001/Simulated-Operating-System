@@ -102,19 +102,19 @@ public class Simulator {
             e.printStackTrace();
         }
     }
-
+    /*for each program loaded from the config file, create a ExecveEvent and add it to the eventQueue
+    * load program event is used to indicate that an EXECVE event should be called
+    */
     private static void addExecveEvents(){
-        //for each program loaded from the config file, create a ExecveEvent and add it to the eventQueue
-        //load program event is used to indicate that an EXECVE event should be called
         for(int i = 0; i<programs.size(); i+=2){
             ExecveEvent execveEvent = new ExecveEvent(Long.parseLong(programs.get(i)), programs.get(i+1));
             eventQueue.add(execveEvent);
         }
     }
 
+    /*for each device loaded from the config file, make a MAKE_DEVICE system call to the kernel
+    */
     private static void createDevices(){
-
-        //for each device loaded from the config file, make a MAKE_DEVICE system call to the kernel
         for(int i = 0; i<devices.size();i+=2){
             int success = kernel.syscall(1, /*device id*/devices.get(i), /*device name or type*/devices.get(i+1));
             print("Simulator: beginMainSimulationLoop: createDevices: successful device creation");
