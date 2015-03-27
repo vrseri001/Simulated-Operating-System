@@ -63,21 +63,7 @@ public class Simulator {
                     //ignore this line
                 }
 
-                //case: line describes I/O device attached to the system
-                else if(line.startsWith("I/O")){
-                    String temp = line.substring(4);
-
-                    //split string into integers and other chars
-                    String[] info = temp.split(" ");
-
-                    //add device information to the LinkedList
-                    //device ID
-                    devices.add(info[0]);
-                    //device name
-                    devices.add(info[1]);
-                }
-
-                else if(line.startsWith("DEVICE")){
+                else if(line.startsWith("I/O") || line.startsWith("DEVICE")){
                     String temp = line.substring(7);
 
                     //split string into integers and other chars
