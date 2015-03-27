@@ -31,19 +31,6 @@ public class Simulator {
     //for processing events
     private static SimulatedCPU cpu = new SimulatedCPU();
 
-
-    public static void main(String[] args) {
-        loadConfig(args[0]);
-        sliceLength = Integer.parseInt(args[1]);
-        dispatchOverhead = Integer.parseInt(args[2]);
-
-        kernel = new SimulatedKernel(dispatchOverhead);
-
-        setUpSimulation();
-        beginMainSimulationLoop();
-
-    }
-
     private static void print(String string){
         System.out.println(string);
     }
@@ -199,5 +186,18 @@ public class Simulator {
      * @param dO dispatch overhead. time taken for the dispatcher to stop a process and start another
      */
     private static void schedule(int slice, int dO){
+    }
+
+    public static void main(String[] args) {
+        loadConfig(args[0]);
+        sliceLength = Integer.parseInt(args[1]);
+        dispatchOverhead = Integer.parseInt(args[2]);
+
+        // TODO: pass sliceLength into the kernel
+        kernel = new SimulatedKernel(dispatchOverhead);
+
+        setUpSimulation();
+        beginMainSimulationLoop();
+
     }
 }
