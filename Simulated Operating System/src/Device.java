@@ -1,25 +1,44 @@
+import java.util.LinkedList;
+
 /**
  * Created by ErinV on 2015-03-23.
  */
-public class Device {
+public class Device implements IODevice {
     private int ID;
-    private String type;
+    private String name;
+    //processes waiting to execute on this IODevice
+    protected LinkedList<ProcessControlBlock> processQ = new LinkedList<ProcessControlBlock>();
 
     public Device(){
         ID = 0;
-        type = "no type";
+        name = "no name";
     }
 
-    public Device(int ID, String type){
+    public Device(int ID, String name){
         this.ID = ID;
-        this.type = type;
+        this.name = name;
     }
 
     public int getID(){
         return ID;
     }
 
-    public String getType(){
-        return type;
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public long getFreeTime() {
+        return 0;
+    }
+
+    @Override
+    public long requestIO(int duration, ProcessControlBlock process) {
+        return 0;
+    }
+
+    public void addProcessControlBlockToQueue(ProcessControlBlock pcb){
+        processQ.add(pcb);
     }
 }

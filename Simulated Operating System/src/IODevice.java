@@ -1,3 +1,4 @@
+import java.util.LinkedList;
 
 /**
  * Representation of an I/O device and queue.
@@ -7,6 +8,7 @@
  */
 public interface IODevice {
 
+    LinkedList<ProcessControlBlock> deviceQ = new LinkedList<ProcessControlBlock>();
     /**
      * Obtain the device ID. 
      */

@@ -7,15 +7,17 @@
  */
 public abstract class Instruction {
 
-    private ProcessControlBlock parent;
     private int duration;
     
     /**
      * Create an instruction of the given duration for the given process.
      */
-    public Instruction(int duration, ProcessControlBlock parent) {
-        this.parent=parent;
+    public Instruction(int duration) {
         this.duration = duration;
+    }
+
+    public int getDuration(){
+        return duration;
     }
     
     

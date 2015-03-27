@@ -12,7 +12,7 @@ public class TimeOutEvent extends Event {
     /**
      * Create a TimeOut event to mark the end of the execution timeslice for the given process.
      */
-    public TimeOutEvent(long systemTime, ProcessControlBlock process) {
+    public TimeOutEvent(long systemTime, int processID) {
         super(systemTime);
         this.process=process;
     }
