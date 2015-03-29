@@ -45,6 +45,14 @@ Temporary Items
 # Java bytecode
 *.class
 
+<<<<<<< HEAD
 # Intellij IDEA project meta information
 .idea
 *.iml
+=======
+# Intellij IDEA project folder
+.idea
+
+# Javadocs
+doc
+>>>>>>> origin/develop

@@ -19,6 +19,7 @@ public class Simulator {
     //time tracker
     private static SimulatedSystemTimer systemTimer;
 
+<<<<<<< HEAD
     public static void main(String[] args) {
 
         loadConfig(args[0]);
@@ -35,6 +36,10 @@ public class Simulator {
         kernel.output(args[0]);
 
     }
+=======
+    //for processing events
+    private static SimulatedCPU cpu = new SimulatedCPU();
+>>>>>>> origin/develop
 
     private static void print(String string){
         System.out.println(string);
@@ -80,7 +85,11 @@ public class Simulator {
 
                 //case: no other case condition met. provide feedback to that effect
                 else {
+<<<<<<< HEAD
                     print("Simulator: set up: try/ while/ if error");
+=======
+                    print("Invalid line found: "+line);
+>>>>>>> origin/develop
                 }
 
             }
@@ -89,6 +98,33 @@ public class Simulator {
             e.printStackTrace();
         }
     }
+<<<<<<< HEAD
+=======
+    /*for each program loaded from the config file, create a ExecveEvent and add it to the eventQueue
+    * load program event is used to indicate that an EXECVE event should be called
+    */
+    private static void addExecveEvents(){
+        for(int i = 0; i<programs.size(); i+=2){
+            ExecveEvent execveEvent = new ExecveEvent(Long.parseLong(programs.get(i)), programs.get(i+1));
+            eventQueue.add(execveEvent);
+        }
+    }
+
+    /*for each device loaded from the config file, make a MAKE_DEVICE system call to the kernel
+    */
+    private static void createDevices(){
+        for(int i = 0; i<devices.size();i+=2){
+            int success = kernel.syscall(1, /*device id*/devices.get(i), /*device name or type*/devices.get(i+1));
+            print("Simulator: beginMainSimulationLoop: createDevices: successful device creation");
+        }
+    }
+
+    private static void setUpSimulation(){
+        addExecveEvents();
+        createDevices();
+        systemTimer = new SimulatedSystemTimer();
+    }
+>>>>>>> origin/develop
 
     private static void beginMainSimulationLoop(){
 
@@ -195,4 +231,28 @@ public class Simulator {
             print("");
         }
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Round robin scheduling of processes on the CPU
+     * @param slice time slice assigned to each of the processes when running on the CPU
+     * @param dO dispatch overhead. time taken for the dispatcher to stop a process and start another
+     */
+    private static void schedule(int slice, int dO){
+    }
+
+    public static void main(String[] args) {
+        loadConfig(args[0]);
+        sliceLength = Integer.parseInt(args[1]);
+        dispatchOverhead = Integer.parseInt(args[2]);
+
+        // TODO: pass sliceLength into the kernel
+        kernel = new SimulatedKernel(dispatchOverhead);
+
+        setUpSimulation();
+        beginMainSimulationLoop();
+
+    }
+>>>>>>> origin/develop
 }
