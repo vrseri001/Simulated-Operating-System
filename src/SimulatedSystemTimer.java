@@ -7,9 +7,11 @@ public class SimulatedSystemTimer implements SystemTimer {
     private long idleTime;
     private long userTime;
     private long systemTime;
+    public EventQueue eventQueue;
 
-    public SimulatedSystemTimer(){
+    public SimulatedSystemTimer(EventQueue eventQueue){
 
+        this.eventQueue = eventQueue;
         systemTime = 0;
     }
 
@@ -50,21 +52,22 @@ public class SimulatedSystemTimer implements SystemTimer {
      * Set the current system time.
      */
     public void setSystemTime(long systemTime){
-
+        this.systemTime = systemTime;
     }
 
     /**
      * Advance system time by the given amount.
      */
     public void advanceSystemTime(long time){
-
+        systemTime+=time;
     }
 
     /**
      * Advance user time and system time by the given amount.
      */
     public void advanceUserTime(long time){
-
+        systemTime+=time;
+        userTime+=time;
     }
 
     /**
@@ -77,9 +80,11 @@ public class SimulatedSystemTimer implements SystemTimer {
 
     /**
      * Schedule a timer interrupt for <code>timeUnits</code> time units in the future
-     * for the given pricess.
+     * for the given process.
      */
     public void scheduleInterrupt(int timeUnits, int processID){
+
+
 
     }
 

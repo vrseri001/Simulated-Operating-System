@@ -7,6 +7,9 @@
  */
 public interface ProcessControlBlock {
 
+    Instruction getNextInstruction();
+
+
     /**
      * Possible process states.
      */
@@ -45,4 +48,5 @@ public interface ProcessControlBlock {
      * Requires <code>getState()!=State.TERMINATED</code>.
      */
     void setState(State state);
+    String toString();
 }

@@ -1,4 +1,5 @@
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.PriorityQueue;
 /**
  * Ordered Event queue for discrete event simulator.
@@ -45,4 +46,26 @@ public class EventQueue {
      * Determine if queue is empty.
      */
     public boolean isEmpty() { return queue.isEmpty(); }
+
+    public int size(){
+        return queue.size();
+    }
+
+    public void cancelEvent(int processID){
+
+        //iterate through the priority queue until find one with the processID
+        for(Event e: queue){
+
+            //if its a timeout check if its for the same process
+            if(e instanceof TimeOutEvent){
+                if(((TimeOutEvent) e).getProcessID()==processID){
+                    queue.remove(e);
+                }
+                else{
+                    continue;
+                }
+            }
+        }
+
+    }
 }

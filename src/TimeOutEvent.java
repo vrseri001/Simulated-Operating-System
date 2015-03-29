@@ -7,19 +7,24 @@
  */
 public class TimeOutEvent extends Event {
 
-    private ProcessControlBlock process;
-    
+    protected long startTime;
+    protected int processID;
     /**
      * Create a TimeOut event to mark the end of the execution timeslice for the given process.
      */
     public TimeOutEvent(long systemTime, int processID) {
         super(systemTime);
-        this.process=process;
+        startTime = systemTime;
+        this.processID = processID;
     }
     
     /**
      * Obtain the process to switched out as a result of this execution timeout.
      */
-    public ProcessControlBlock getProcess() { return process; }
+    public int getProcessID() { return processID; }
+
+    public long getStartTime() {
+        return startTime;
+    }
         
 }

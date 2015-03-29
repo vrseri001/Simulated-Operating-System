@@ -10,15 +10,15 @@ public class CPUInstruction extends Instruction {
 
     private int burstRemaining;
     
-    public CPUInstruction(int duration, ProcessControlBlock parent) {
-        super(duration, parent);
+    public CPUInstruction(int duration) {
+        super(duration); //, parent
         burstRemaining = duration;
     }
     
     /**
      * Obtain execution time required to complete this cpu burst.
      */
-    int getBurstRemaining() { return burstRemaining; }
+    public int getBurstRemaining() { return burstRemaining; }
     
     /**
      * Simulate execution of cpu burst for <code>timeUnits</code> time.
@@ -30,12 +30,9 @@ public class CPUInstruction extends Instruction {
      * 
      * @return <code>timeUnits-this.getBurstRemaining()</code>.
      */
-    int execute(int timeUnits){ 
-        int remainder = timeUnits-burstRemaining;
-        if (remainder<=0) {
-            burstRemaining=Math.abs(remainder);
-        }
-        return remainder;
+    public int execute(int timeUnits){
+        burstRemaining-=timeUnits;
+        return -burstRemaining;
     }
         
     

@@ -1,4 +1,5 @@
 import java.io.File;
+import java.lang.System;
 import java.util.*;
 
 /**
@@ -6,41 +7,32 @@ import java.util.*;
  */
 public class Simulator {
 
-    //list of all the devices from the configuration file
-    private static LinkedList<String> devices = new LinkedList<String>();
-
-    //list of all the programs from the configuration file
-    private static LinkedList<String> programs = new LinkedList<String>();
-
     //events queue
     private static EventQueue eventQueue = new EventQueue();
 
-    //ready queue; queue to which PCBs are added when a program is ready to be executed according to schedule
-    private LinkedList<SimulatedProcessControlBlock> readyQueue = new LinkedList<SimulatedProcessControlBlock>();
-
     //kernel to simulate process scheduling
     private static SimulatedKernel kernel;
+    private static SimulatedCPU cpu;
 
-    //parameters for the Round Robin simulation
     private static int sliceLength;
-    private static int dispatchOverhead;
-
+    private static String programFile;
     //time tracker
     private static SimulatedSystemTimer systemTimer;
 
-    //for processing events
-    private static SimulatedCPU cpu = new SimulatedCPU();
-
-
     public static void main(String[] args) {
+
         loadConfig(args[0]);
+
         sliceLength = Integer.parseInt(args[1]);
-        dispatchOverhead = Integer.parseInt(args[2]);
+        int dispatchOverhead = Integer.parseInt(args[2]);
+        systemTimer = new SimulatedSystemTimer(eventQueue);
 
-        kernel = new SimulatedKernel(dispatchOverhead);
+        cpu = new SimulatedCPU(systemTimer, dispatchOverhead);
+        kernel = new SimulatedKernel(sliceLength, dispatchOverhead, eventQueue, systemTimer, cpu);
 
-        setUpSimulation();
         beginMainSimulationLoop();
+
+        kernel.output(args[0]);
 
     }
 
@@ -69,11 +61,10 @@ public class Simulator {
                     //split string into integers and other chars
                     String[] info = temp.split(" ");
 
-                    //add device information to the LinkedList
-                    //device ID
-                    devices.add(info[0]);
-                    //device name
-                    devices.add(info[1]);
+                    //make a system call to the kernel to create a device
+                    int success = kernel.syscall(1, Integer.parseInt(info[0]), info[1]);
+                    print("Simulator: loadConfig: successful device creation");
+
                 }
 
                 //case: line describes program information
@@ -83,121 +74,125 @@ public class Simulator {
                     //split string into integers and other chars
                     String[] info = temp.split(" ");
 
-                    //add device information to the LinkedList
-                    //device ID
-                    programs.add(info[0]);
-                    //device name
-                    programs.add(info[1]);
-
-                }
+                    //create an event to load the program and add it to the queue
+                    ExecveEvent execveEvent = new ExecveEvent(Long.parseLong(info[0]), info[1]);
+                    eventQueue.add(execveEvent);                }
 
                 //case: no other case condition met. provide feedback to that effect
                 else {
-                    print("Simulator: main(): try/ while/ if error");
+                    print("Simulator: set up: try/ while/ if error");
                 }
 
             }
-        } catch (Exception e){
-            print("Simulator: main(): error: "+e);
+        } catch (Exception e) {
+            print("Simulator: set up: error: " + e);
             e.printStackTrace();
         }
     }
 
-    private static void addExecveEvents(){
-        //for each program loaded from the config file, create a ExecveEvent and add it to the eventQueue
-        //load program event is used to indicate that an EXECVE event should be called
-        for(int i = 0; i<programs.size(); i+=2){
-            ExecveEvent execveEvent = new ExecveEvent(Long.parseLong(programs.get(i)), programs.get(i+1));
-            eventQueue.add(execveEvent);
-        }
-    }
-
-    private static void createDevices(){
-
-        //for each device loaded from the config file, make a MAKE_DEVICE system call to the kernel
-        for(int i = 0; i<devices.size();i+=2){
-            int success = kernel.syscall(1, /*device id*/devices.get(i), /*device name or type*/devices.get(i+1));
-            print("Simulator: beginMainSimulationLoop: createDevices: successful device creation");
-        }
-    }
-
-    private static void setUpSimulation(){
-        addExecveEvents();
-        createDevices();
-        systemTimer = new SimulatedSystemTimer();
-    }
-
     private static void beginMainSimulationLoop(){
 
-        while( (!eventQueue.isEmpty()) && (!cpu.isIdle()) ){
+        int count =0;
 
+        //until eventQueue.isEmpty() return true AND AT THE SAME TIME cpu.isIdle() returns true
+        while( /*!(eventQueue.isEmpty() && kernel.cpu.isIdle()) */ count<4 ){
+            count++;
+            print("run through outer while "+count+" times.");
+            //on first run, cpu has not yet been initialised, and but events have already been added to the event queue
+            //the following print statements should therefore be false and true respectively
+            print("eventQueue empty state is "+eventQueue.isEmpty());
+            print("cpu idle state is "+kernel.cpu.isIdle());
+            print("current system time is "+systemTimer.getSystemTime());
             //if the event queue contains
-            while( (!eventQueue.isEmpty()) && (eventQueue.peek().getTime()<=systemTimer.getSystemTime())){
+            while( (!eventQueue.isEmpty()) && (eventQueue.peek().getTime()<=systemTimer.getSystemTime())) {
+                print("     Inner while loop executing");
+                print("     eventQueue is empty state is "+eventQueue.isEmpty());
+                print("     current process is "+eventQueue.peek().toString()+" andtime at which to execute is "+eventQueue.peek().getTime());
+                print("     current system time is "+systemTimer.getSystemTime());
 
                 //process the event
                 //get the current event off the top of the eventQueue
                 Event currentEvent = eventQueue.poll();
 
                 //case: current event is a load program event, otherwise called an Execve event
-                if(currentEvent instanceof ExecveEvent){
-
+                if (currentEvent instanceof ExecveEvent) {
+                    print("     Execve event loaded off. Initiating system call.");
                     //create an execve system call, which returns the time taken to read in the program instructions
-                    int timeoutPID = kernel.syscall(2, ((ExecveEvent) currentEvent).getProgramName());
-                    TimeOutEvent timeOutEvent = new TimeOutEvent((currentEvent.getTime()+sliceLength), timeoutPID);
-                    eventQueue.add(timeOutEvent);
+                    int exitStatus = kernel.syscall(2, ((ExecveEvent) currentEvent).getProgramName());
+
+                } else if (currentEvent instanceof TimeOutEvent) {
+
+                    print("     Time out event loaded off of queue");
+                    print("     Timing out process number "+((TimeOutEvent) currentEvent).getProcessID());
+                    kernel.interrupt(0, kernel.readyQueue.peek().getPID());
+                    print("     Time out complete");
+
+                } else if (currentEvent instanceof WakeUpEvent) {
+                    print("     Wake up event loaded off of queue");
+                    kernel.interrupt(1, /**time at which event is due to occur*/currentEvent.getTime(),
+                            /*id of device handling the request*/((WakeUpEvent) currentEvent).getDevice().getID(),
+                            /*id of process making request*/((WakeUpEvent) currentEvent).getProcess().getPID());
+                } else {
+                    print("     Simulator: mainLoop: handling events: unknown event " + currentEvent);
                 }
-
-                else if(currentEvent instanceof TimeOutEvent){
-
-                    //remove currently executing process from CPU
-                    ProcessControlBlock currentProcess = cpu.getCurrentProcess();
-                    //cancel timeout for current process
-                    //do this immediately after removing the currentProcess from the CPU so that...
-
-
-                    //get the deviceID
-                    int deviceID = ((IOInstruction)currentProcess.getInstruction()).getDeviceID();
-
-                    //get the request duration
-                    long duration = currentProcess.getInstruction().getDuration();
-
-                    //schedule a wake up event
-                    long start = System.currentTimeMillis()+duration;
-                    IODevice ioDevice = kernel.devices.get(deviceID);
-                    WakeUpEvent wakeUpEvent = new WakeUpEvent(start, ioDevice,currentProcess);
-                    eventQueue.add(wakeUpEvent);
-
-                    //place process on device queue in kernel
-                    int endIORequest = kernel.syscall(3, deviceID, duration);
-
-                    //next available process switched from the ready queue onto the CPU?
-                    //is this how I do it?
-                    cpu.contextSwitch(kernel.readyQueue.poll());
-
-
-                }
-
-                else if(currentEvent instanceof WakeUpEvent){
-
-                }
-
             }
 
-            long currentTime = System.currentTimeMillis();
-            long nextEventDue = eventQueue.peek().getTime();
+            if(count==1){
+                print("CPU uninitialised. Initialise CPU.");
+                kernel.initialiseCPU();
+            }
 
-            //execute CPU
-            //by only calling execute on 1, events generated by an executed instruction are
-            //not missed as the while loop checks for them after the execution of each instruction
-            cpu.execute(nextEventDue-currentTime);
+            //check that the program contains an instruction
+            if(((SimulatedProcessControlBlock)cpu.getCurrentProcess()).getNumberOfInstructions()>1){
+
+                //case: the instruction to be executed is a CPUInstruction
+                if(((SimulatedProcessControlBlock)cpu.getCurrentProcess()).getNextInstruction() instanceof CPUInstruction){
+                    cpu.execute(sliceLength);
+                }
+
+                //case: the instruction to be executed is an IOInstruction
+                else if(((SimulatedProcessControlBlock)cpu.getCurrentProcess()).getNextInstruction() instanceof IOInstruction){
+                    // make an IO_REQUEST
+                    IOInstruction instruction = (IOInstruction)cpu.getCurrentProcess().getNextInstruction();
+                    kernel.syscall(3, instruction.getDeviceID(), instruction.getDuration());
+                }
+
+                //case: unidentifies instruction type
+                else{
+                    print("Unsupported instruction");
+//                    print("Instruction type: "+cpu.getCurrentProcess().getInstruction().toString());
+                }
+            }
+
+            //if there is only one instruction left to execute, the program should terminate after execution
+            if(((SimulatedProcessControlBlock)cpu.getCurrentProcess()).getNumberOfInstructions()==1){
+
+                //case: the instruction to be executed is a CPUInstruction
+                if(((SimulatedProcessControlBlock)cpu.getCurrentProcess()).getInstruction() instanceof CPUInstruction){
+
+                    cpu.execute(sliceLength);
+                    print(cpu.getCurrentProcess().getInstruction().getDuration()+"");
+
+                }
+
+                //case: the instruction to be executed is an IOInstruction
+                else if(((SimulatedProcessControlBlock)cpu.getCurrentProcess()).getInstruction() instanceof IOInstruction){
+                    // make an IO_REQUEST
+                    IOInstruction instruction = (IOInstruction)cpu.getCurrentProcess().getInstruction();
+                    kernel.syscall(3, instruction.getDeviceID(), instruction.getDuration());
+                }
+
+                //case: unidentifies instruction type
+                else{
+                    print("Only one instruction left. getNextInstruction() will return null.");
+                }
+            }
+
+            //cpu MUST be empty/idle
+            else{
+                print("CPU state should be idle and is "+cpu.isIdle());
+            }
+            print("");
         }
-    }
-
-    /**
-     * Round robin scheduling of processes on the CPU
-     * @param slice time slice assigned to each of the processes when running on the CPU
-     * @param dO dispatch overhead. time taken for the dispatcher to stop a process and start another
-     */
-    private static void schedule(int slice, int dO){
     }
 }

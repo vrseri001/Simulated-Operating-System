@@ -21,6 +21,10 @@ public class IOInstruction extends Instruction {
      * Get the ID of the IO device.
      */
     public int getDeviceID() { return deviceID; }
+
+    public int getDuration(){
+        return super.getDuration();
+    }
     
 
 }

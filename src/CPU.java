@@ -9,6 +9,7 @@
  */
 public interface CPU {
     int numberOfContextSwitches = 0;
+    ProcessControlBlock currentPCB = null;
     /**
      * Obtain the currently executing process.
      */
@@ -27,10 +28,10 @@ public interface CPU {
      * the current cpu burst was completed. A value of zero means the current cpu 
      * burst may or may not have completed.
      *
-     * @param timeUnits changed to type long to allow for systemTime from SystemTimer to be used to call this method.
+     * @param timeUnits amount of time allocated to execution
      * @return number of unused time units.
      */
-    int execute(long timeUnits);
+    int execute(int timeUnits);
     
     /**
      * Switch the current process out and the given process in.
@@ -40,7 +41,9 @@ public interface CPU {
     ProcessControlBlock contextSwitch(ProcessControlBlock process);
 
     int getNumberOfContextSwitches();
-    
+
+    void removeCurrentProcess();
+
     /**
      * Determine whether the CPU is idle (<code>currentProcess()==null</code>).
      */

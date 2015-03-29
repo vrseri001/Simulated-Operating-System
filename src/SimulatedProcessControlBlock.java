@@ -7,13 +7,16 @@ import java.util.Scanner;
  */
 public class SimulatedProcessControlBlock implements ProcessControlBlock {
 
-    private LinkedList<Instruction> instructions;
+    private LinkedList<Instruction> instructions = new LinkedList<Instruction>();
+    private Instruction currInstr;
     private int numberOfInstructions = 0;
-    private int programCounter = 0;
+    protected int programCounter = 0;
     private int PID;
+    private String programName;
 
     public SimulatedProcessControlBlock(String fileName, int PID){
         this.PID = PID;
+        programName = fileName;
 
         try{
             File file = new File(fileName);
@@ -24,7 +27,25 @@ public class SimulatedProcessControlBlock implements ProcessControlBlock {
                 String str = scanner.nextLine();
                 String[] temp = str.split(" ");
                 try{
-                    SimulatedInstruction instr = new SimulatedInstruction(Integer.parseInt(temp[1]), this);
+                    //check if it's a cpu or io instruction
+                    if(temp[0].startsWith("#")){
+                        continue;
+                    }
+
+                    //case: create a CPU instruction
+                    else if(temp[0].equals("CPU")){
+                        CPUInstruction cpuInstru = new CPUInstruction(Integer.parseInt(temp[1]));
+                    }
+
+                    //case: create a IO instruction
+                    else if(temp[0].equals("IO")||temp[1].equals("DEVICE")){
+                        IOInstruction ioInstruc = new IOInstruction(Integer.parseInt(temp[1]), Integer.parseInt(temp[2]));
+                    }
+                    else {
+                        System.out.print("SimulatedProcessControlBlock constructor: unidentified instruction");
+                    }
+
+                    SimulatedInstruction instr = new SimulatedInstruction(Integer.parseInt(temp[1]));
                     instructions.add(instr);
                     numberOfInstructions++;
                 }
@@ -51,21 +72,27 @@ public class SimulatedProcessControlBlock implements ProcessControlBlock {
     }
     @Override
     public String getProgramName() {
-        return null;
+        return programName;
     }
 
     @Override
     public Instruction getInstruction() {
-        Instruction instruction = instructions.poll();
-        Instruction result = instruction;
-        instructions.add(instruction);
-        return result;
+        Instruction instruction = instructions.peek();
+        return instruction;
     }
 
     @Override
     public void nextInstruction() {
         programCounter++;
         numberOfInstructions--;
+    }
+
+    public Instruction getNextInstruction(){
+        if(instructions.size()==1){
+            return null;
+        }
+        Instruction nextInstruc = instructions.get(1);
+        return nextInstruc;
     }
 
     @Override
@@ -76,5 +103,8 @@ public class SimulatedProcessControlBlock implements ProcessControlBlock {
     @Override
     public void setState(State state) {
 
+    }
+    public String toString() {
+        return String.format("{%d, %s}", this.getPID(), this.getProgramName());
     }
 }
